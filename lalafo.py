@@ -4,7 +4,6 @@ from selenium import webdriver
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 import time
-import re
 import csv
 cookies = {
     'event_user_hash': 'e58243c5-d5fe-45d2-8ef6-531f84a98879',
@@ -42,41 +41,41 @@ response = requests.get('https://lalafo.kg/kyrgyzstan/nedvizhimost', cookies=coo
 
 
 def get_source_html(url):
-    # driver = webdriver.Chrome()
-    # driver.maximize_window()
+    driver = webdriver.Chrome()
+    driver.maximize_window()
 
     try:
-        # driver.get(url=url)
-        # time.sleep(5)
-        #
-        # block = driver.find_element(By.CLASS_NAME, 'virtual-scroll__container')
-        # action = ActionChains(driver)
-        # visited_elements = set()
-        # current_translateY = 0  # Исходное значение translateY
-        #
-        # while True:
-            # # Создаем уникальный ключ на основе текущего translateY значения
-            # unique_key = f'translateY_{current_translateY}'
-            #
-            # # Проверяем, есть ли элемент в множестве
-            # if unique_key not in visited_elements:
-            #     # Если элемент уникален, добавляем его в множество и записываем в файл
-            #     visited_elements.add(unique_key)
-            #
-            #     # Находим элемент с текущим translateY значением
-            #     target_div = block.find_element(By.CSS_SELECTOR,
-            #                                     f'div[style="transform: translateY({current_translateY}px); position: absolute; width: 100%;"]')
-            #
-            #     with open('target_div.html', 'a', encoding='utf-8') as file:
-            #         file.write(target_div.get_attribute('outerHTML'))
-            #         file.write('\n')  # Добавляем разделитель между содержимым
-            #
-            # # Увеличиваем текущее значение translateY на 186 для поиска следующего элемента
-            # current_translateY += 186
-            #
-            # # Скроллим к следующему элементу
-            # action.move_to_element(target_div).perform()
-            # time.sleep(5)
+        driver.get(url=url)
+        time.sleep(5)
+
+        block = driver.find_element(By.CLASS_NAME, 'virtual-scroll__container')
+        action = ActionChains(driver)
+        visited_elements = set()
+        current_translateY = 0  # Исходное значение translateY
+
+        while True:
+            # Создаем уникальный ключ на основе текущего translateY значения
+            unique_key = f'translateY_{current_translateY}'
+
+            # Проверяем, есть ли элемент в множестве
+            if unique_key not in visited_elements:
+                # Если элемент уникален, добавляем его в множество и записываем в файл
+                visited_elements.add(unique_key)
+
+                # Находим элемент с текущим translateY значением
+                target_div = block.find_element(By.CSS_SELECTOR,
+                                                f'div[style="transform: translateY({current_translateY}px); position: absolute; width: 100%;"]')
+
+                with open('target_div.html', 'a', encoding='utf-8') as file:
+                    file.write(target_div.get_attribute('outerHTML'))
+                    file.write('\n')  # Добавляем разделитель между содержимым
+
+            # Увеличиваем текущее значение translateY на 186 для поиска следующего элемента
+            current_translateY += 186
+
+            # Скроллим к следующему элементу
+            action.move_to_element(target_div).perform()
+            time.sleep(5)
 
         # ________________________________________________________________________________________________
 
