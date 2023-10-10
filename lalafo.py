@@ -51,29 +51,23 @@ def get_source_html(url):
         block = driver.find_element(By.CLASS_NAME, 'virtual-scroll__container')
         action = ActionChains(driver)
         visited_elements = set()
-        current_translateY = 0  # Исходное значение translateY
+        current_translateY = 0
 
         while True:
-            # Создаем уникальный ключ на основе текущего translateY значения
             unique_key = f'translateY_{current_translateY}'
 
-            # Проверяем, есть ли элемент в множестве
             if unique_key not in visited_elements:
-                # Если элемент уникален, добавляем его в множество и записываем в файл
-                visited_elements.add(unique_key)
 
-                # Находим элемент с текущим translateY значением
+                visited_elements.add(unique_key)
                 target_div = block.find_element(By.CSS_SELECTOR,
                                                 f'div[style="transform: translateY({current_translateY}px); position: absolute; width: 100%;"]')
 
                 with open('target_div.html', 'a', encoding='utf-8') as file:
                     file.write(target_div.get_attribute('outerHTML'))
-                    file.write('\n')  # Добавляем разделитель между содержимым
+                    file.write('\n')
 
-            # Увеличиваем текущее значение translateY на 186 для поиска следующего элемента
             current_translateY += 186
 
-            # Скроллим к следующему элементу
             action.move_to_element(target_div).perform()
             time.sleep(5)
 
