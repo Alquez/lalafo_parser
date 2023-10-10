@@ -79,96 +79,96 @@ def get_source_html(url):
 
         # ________________________________________________________________________________________________
 
-        with open('target_div.html', 'r', encoding='utf-8') as file:
-            html_content = file.read()
-
-        soup = BeautifulSoup(html_content, 'html.parser')
-        ad_tiles = soup.find_all('div', class_='AdTileHorizontal')
-        ad_data_list = []
-
-        for ad_tile in ad_tiles:
-            title = ad_tile.find('a', class_='AdTileHorizontalTitle')
-            title_text = title.text.strip() if title else "no data"
-
-            description = ad_tile.find('p', class_='AdTileHorizontalDescription')
-            description_text = description.text.strip() if description else "no data"
-
-            kgs_price = ad_tile.find('p', class_='AdTileHorizontalPrice').find('span')
-            kgs_price_text = kgs_price.text if kgs_price else "no data"
-
-            usd_price = ad_tile.find('span', class_='international-price')
-            usd_price_text = usd_price.text if usd_price else "no data"
-
-            location = ad_tile.find('span', class_='meta-info__location')
-            location_text = location.text.strip() if location else "no data"
-
-            date = ad_tile.find('span', class_='AdTileHorizontalDate')
-            date_text = date.text.strip() if date else "no data"
-
-            url = ad_tile.find('a', class_='AdTileHorizontalTitle')['href'] if ad_tile.find(
-                'a', class_='AdTileHorizontalTitle') else "no data"
-
-            data_for_sale = ["Продается квартира", "Продается дом", "Продается участок"]
-
-            if description_text in data_for_sale or description_text.endswith("на продажу"):
-                ad_data = {
-                    "Название": title_text,
-                    "Продажа": description_text,
-                    "Цена сом": kgs_price_text,
-                    "Цена доллар": usd_price_text,
-                    "Местоположение": location_text,
-                    "Дата": date_text,
-                    "URL": 'https://lalafo.kg' + url
-                }
-
-                # Дополнительный запрос для получения description_text
-                data_response = requests.get('https://lalafo.kg' + url)
-                data_soup = BeautifulSoup(data_response.content, 'html.parser')
-
-                ul_tags = data_soup.find('ul', class_='details-page__params css-tl517w')
-
-                district = ul_tags.find('p', class_='Paragraph secondary', string='Район:')
-                district_text = district.find_next('a').text.strip() if district else "no data"
-
-                area = ul_tags.find('p', class_='Paragraph secondary', string='Площадь участка (соток):')
-                area_text = area.find_next('p').text.strip() if area else "no data"
-
-                area2 = ul_tags.find('p', class_='Paragraph secondary', string='Площадь (м2):')
-                area2_text = area2.find_next('p').text.strip() if area2 else "no data"
-
-                rooms = ul_tags.find('p', class_='Paragraph secondary', string='Количество комнат:')
-                rooms_text = rooms.find_next('a').text.strip() if rooms else "no data"
-
-                description_wrap = data_soup.find('div', class_='description__wrap').find_next('p').find_all('span')
-                description_wrap_text = [i.text.strip() for i in description_wrap]
-
-                ad_data["Район"] = district_text
-                ad_data["Площадь участка (соток)"] = area_text
-                ad_data["Площадь"] = area2_text
-                ad_data["Количество комнат"] = rooms_text
-                ad_data["Описание от объявления"] = description_wrap_text
-
-                ad_data_list.append(ad_data)
-
-        # для просмотра в консоли
-        # for idx, ad_data in enumerate(ad_data_list, start=1):
-        #     print(f"Объявление {idx}: {ad_data}")
-
-        with open('output.csv', 'w', newline='', encoding='utf-8') as csvfile:
-            fieldnames = ['Название', 'Продажа', 'Цена сом', 'Цена доллар', 'Местоположение', 'Дата', 'URL', 'Район',
-                          'Площадь участка (соток)', 'Площадь', 'Количество комнат', 'Описание от объявления']
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-
-            for ad_data in ad_data_list:
-                writer.writerow(ad_data)
+        # with open('target_div.html', 'r', encoding='utf-8') as file:
+        #     html_content = file.read()
+        #
+        # soup = BeautifulSoup(html_content, 'html.parser')
+        # ad_tiles = soup.find_all('div', class_='AdTileHorizontal')
+        # ad_data_list = []
+        #
+        # for ad_tile in ad_tiles:
+        #     title = ad_tile.find('a', class_='AdTileHorizontalTitle')
+        #     title_text = title.text.strip() if title else "no data"
+        #
+        #     description = ad_tile.find('p', class_='AdTileHorizontalDescription')
+        #     description_text = description.text.strip() if description else "no data"
+        #
+        #     kgs_price = ad_tile.find('p', class_='AdTileHorizontalPrice').find('span')
+        #     kgs_price_text = kgs_price.text if kgs_price else "no data"
+        #
+        #     usd_price = ad_tile.find('span', class_='international-price')
+        #     usd_price_text = usd_price.text if usd_price else "no data"
+        #
+        #     location = ad_tile.find('span', class_='meta-info__location')
+        #     location_text = location.text.strip() if location else "no data"
+        #
+        #     date = ad_tile.find('span', class_='AdTileHorizontalDate')
+        #     date_text = date.text.strip() if date else "no data"
+        #
+        #     url = ad_tile.find('a', class_='AdTileHorizontalTitle')['href'] if ad_tile.find(
+        #         'a', class_='AdTileHorizontalTitle') else "no data"
+        #
+        #     data_for_sale = ["Продается квартира", "Продается дом", "Продается участок"]
+        #
+        #     if description_text in data_for_sale or description_text.endswith("на продажу"):
+        #         ad_data = {
+        #             "Название": title_text,
+        #             "Продажа": description_text,
+        #             "Цена сом": kgs_price_text,
+        #             "Цена доллар": usd_price_text,
+        #             "Местоположение": location_text,
+        #             "Дата": date_text,
+        #             "URL": 'https://lalafo.kg' + url
+        #         }
+        #
+        #         # Дополнительный запрос для получения description_text
+        #         data_response = requests.get('https://lalafo.kg' + url)
+        #         data_soup = BeautifulSoup(data_response.content, 'html.parser')
+        #
+        #         ul_tags = data_soup.find('ul', class_='details-page__params css-tl517w')
+        #
+        #         district = ul_tags.find('p', class_='Paragraph secondary', string='Район:')
+        #         district_text = district.find_next('a').text.strip() if district else "no data"
+        #
+        #         area = ul_tags.find('p', class_='Paragraph secondary', string='Площадь участка (соток):')
+        #         area_text = area.find_next('p').text.strip() if area else "no data"
+        #
+        #         area2 = ul_tags.find('p', class_='Paragraph secondary', string='Площадь (м2):')
+        #         area2_text = area2.find_next('p').text.strip() if area2 else "no data"
+        #
+        #         rooms = ul_tags.find('p', class_='Paragraph secondary', string='Количество комнат:')
+        #         rooms_text = rooms.find_next('a').text.strip() if rooms else "no data"
+        #
+        #         description_wrap = data_soup.find('div', class_='description__wrap').find_next('p').find_all('span')
+        #         description_wrap_text = [i.text.strip() for i in description_wrap]
+        #
+        #         ad_data["Район"] = district_text
+        #         ad_data["Площадь участка (соток)"] = area_text
+        #         ad_data["Площадь"] = area2_text
+        #         ad_data["Количество комнат"] = rooms_text
+        #         ad_data["Описание от объявления"] = description_wrap_text
+        #
+        #         ad_data_list.append(ad_data)
+        #
+        # # для просмотра в консоли
+        # # for idx, ad_data in enumerate(ad_data_list, start=1):
+        # #     print(f"Объявление {idx}: {ad_data}")
+        #
+        # with open('output.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        #     fieldnames = ['Название', 'Продажа', 'Цена сом', 'Цена доллар', 'Местоположение', 'Дата', 'URL', 'Район',
+        #                   'Площадь участка (соток)', 'Площадь', 'Количество комнат', 'Описание от объявления']
+        #     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        #     writer.writeheader()
+        #
+        #     for ad_data in ad_data_list:
+        #         writer.writerow(ad_data)
 
     except Exception as e:
         print(e)
 
-    # finally:
-        # driver.close()
-        # driver.quit()
+    finally:
+        driver.close()
+        driver.quit()
 
 
 def main():
