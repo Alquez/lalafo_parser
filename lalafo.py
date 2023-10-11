@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.common import NoSuchElementException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 import time
@@ -46,30 +47,38 @@ def get_source_html(url):
 
     try:
         driver.get(url=url)
-        time.sleep(5)
+        time.sleep(10)
 
         block = driver.find_element(By.CLASS_NAME, 'virtual-scroll__container')
         action = ActionChains(driver)
         visited_elements = set()
         current_translateY = 0
+        count = 1
+        file_counter = 3
+        elements_per_file = 500
 
         while True:
             unique_key = f'translateY_{current_translateY}'
 
             if unique_key not in visited_elements:
-
                 visited_elements.add(unique_key)
                 target_div = block.find_element(By.CSS_SELECTOR,
                                                 f'div[style="transform: translateY({current_translateY}px); position: absolute; width: 100%;"]')
 
-                with open('target_div.html', 'a', encoding='utf-8') as file:
+                with open(f'target_div_{file_counter}.html', 'a', encoding='utf-8') as file:
                     file.write(target_div.get_attribute('outerHTML'))
                     file.write('\n')
 
-            current_translateY += 186
+                count += 1
 
+                # Если достигнуто максимальное количество элементов в файле
+                if count % elements_per_file == 0:
+                    file_counter += 1  # Увеличиваем счетчик файлов
+                    count = 0  # Сбрасываем счетчик элементов
+
+            current_translateY += 186
+            print(f"element {count}")
             action.move_to_element(target_div).perform()
-            time.sleep(5)
 
         # ________________________________________________________________________________________________
 
@@ -114,36 +123,39 @@ def get_source_html(url):
         #             "Дата": date_text,
         #             "URL": 'https://lalafo.kg' + url
         #         }
+        #         try:
+        #             # Дополнительный запрос для получения description_text
+        #             data_response = requests.get('https://lalafo.kg' + url)
+        #             data_soup = BeautifulSoup(data_response.content, 'html.parser')
         #
-        #         # Дополнительный запрос для получения description_text
-        #         data_response = requests.get('https://lalafo.kg' + url)
-        #         data_soup = BeautifulSoup(data_response.content, 'html.parser')
+        #             ul_tags = data_soup.find('ul', class_='details-page__params css-tl517w')
         #
-        #         ul_tags = data_soup.find('ul', class_='details-page__params css-tl517w')
+        #             district = ul_tags.find('p', class_='Paragraph secondary', string='Район:')
+        #             district_text = district.find_next('a').text.strip() if district else "no data"
         #
-        #         district = ul_tags.find('p', class_='Paragraph secondary', string='Район:')
-        #         district_text = district.find_next('a').text.strip() if district else "no data"
+        #             area = ul_tags.find('p', class_='Paragraph secondary', string='Площадь участка (соток):')
+        #             area_text = area.find_next('p').text.strip() if area else "no data"
         #
-        #         area = ul_tags.find('p', class_='Paragraph secondary', string='Площадь участка (соток):')
-        #         area_text = area.find_next('p').text.strip() if area else "no data"
+        #             area2 = ul_tags.find('p', class_='Paragraph secondary', string='Площадь (м2):')
+        #             area2_text = area2.find_next('p').text.strip() if area2 else "no data"
         #
-        #         area2 = ul_tags.find('p', class_='Paragraph secondary', string='Площадь (м2):')
-        #         area2_text = area2.find_next('p').text.strip() if area2 else "no data"
+        #             rooms = ul_tags.find('p', class_='Paragraph secondary', string='Количество комнат:')
+        #             rooms_text = rooms.find_next('a').text.strip() if rooms else "no data"
         #
-        #         rooms = ul_tags.find('p', class_='Paragraph secondary', string='Количество комнат:')
-        #         rooms_text = rooms.find_next('a').text.strip() if rooms else "no data"
+        #             description_wrap = data_soup.find('div', class_='description__wrap').find_next('p').find_all('span')
+        #             description_wrap_text = [i.text.strip() for i in description_wrap]
         #
-        #         description_wrap = data_soup.find('div', class_='description__wrap').find_next('p').find_all('span')
-        #         description_wrap_text = [i.text.strip() for i in description_wrap]
+        #             ad_data["Район"] = district_text
+        #             ad_data["Площадь участка (соток)"] = area_text
+        #             ad_data["Площадь"] = area2_text
+        #             ad_data["Количество комнат"] = rooms_text
+        #             ad_data["Описание от объявления"] = description_wrap_text
         #
-        #         ad_data["Район"] = district_text
-        #         ad_data["Площадь участка (соток)"] = area_text
-        #         ad_data["Площадь"] = area2_text
-        #         ad_data["Количество комнат"] = rooms_text
-        #         ad_data["Описание от объявления"] = description_wrap_text
+        #             ad_data_list.append(ad_data)
         #
-        #         ad_data_list.append(ad_data)
-        #
+        #         except Exception as e:
+        #             print(f'Элемент не найден в данном блоке. Пропускаем... https://lalafo.kg{url}')
+        #             continue
         # # для просмотра в консоли
         # # for idx, ad_data in enumerate(ad_data_list, start=1):
         # #     print(f"Объявление {idx}: {ad_data}")
