@@ -47,37 +47,43 @@ def get_source_html(url):
 
     try:
         driver.get(url=url)
-        time.sleep(10)
-
+        time.sleep(5)
         block = driver.find_element(By.CLASS_NAME, 'virtual-scroll__container')
         action = ActionChains(driver)
         visited_elements = set()
         current_translateY = 0
         count = 1
-        file_counter = 3
+        file_counter = 1
         elements_per_file = 500
 
         while True:
-            unique_key = f'translateY_{current_translateY}'
+            unique_key = f'translateY({current_translateY}px)'
+
+            if current_translateY >= 1000000:
+                formatted_translateY = '{:.5e}'.format(current_translateY)
+                unique_key = f'translateY({formatted_translateY}px)'
 
             if unique_key not in visited_elements:
                 visited_elements.add(unique_key)
-                target_div = block.find_element(By.CSS_SELECTOR,
-                                                f'div[style="transform: translateY({current_translateY}px); position: absolute; width: 100%;"]')
+                try:
+                    target_div = block.find_element(By.CSS_SELECTOR,
+                        f'div[style="transform: {unique_key}; position: absolute; width: 100%;"]')
 
-                with open(f'target_div_{file_counter}.html', 'a', encoding='utf-8') as file:
-                    file.write(target_div.get_attribute('outerHTML'))
-                    file.write('\n')
+                    with open(f'target_div_{file_counter}.html', 'a', encoding='utf-8') as file:
+                        file.write(target_div.get_attribute('outerHTML'))
+                        file.write('\n')
 
-                count += 1
+                    count += 1
 
-                # Если достигнуто максимальное количество элементов в файле
-                if count % elements_per_file == 0:
-                    file_counter += 1  # Увеличиваем счетчик файлов
-                    count = 0  # Сбрасываем счетчик элементов
+                    if count % elements_per_file == 0:
+                        file_counter += 1
+                        count = 0
 
+                except Exception as e:
+                    print(f"Error: {e}")
+                    continue
             current_translateY += 186
-            print(f"element {count}")
+            print(f"element {unique_key}")
             action.move_to_element(target_div).perform()
 
         # ________________________________________________________________________________________________
