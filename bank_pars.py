@@ -49,13 +49,6 @@ response = requests.get(
     cookies=cookies,
     headers=headers,
 )
-
-response = requests.get(
-    'https://nationalbank.kz/ru/exchangerates/ezhednevnye-oficialnye-rynochnye-kursy-valyut/excel',
-    params=params,
-    cookies=cookies,
-    headers=headers,
-)
 file_path = '/home/emir/Desktop/house kg/exchange_rates.xlsx'
 # Проверяем, успешно ли выполнен запрос
 if response.status_code == 200:
