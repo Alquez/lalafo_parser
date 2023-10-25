@@ -42,7 +42,7 @@ params = {
         '4',
     ],
 }
-
+# https://nationalbank.kz/ru/exchangerates/ezhednevnye-oficialnye-rynochnye-kursy-valyut
 response = requests.get(
     'https://nationalbank.kz/ru/exchangerates/ezhednevnye-oficialnye-rynochnye-kursy-valyut/excel',
     params=params,
