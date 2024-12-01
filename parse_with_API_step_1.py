@@ -51,48 +51,49 @@ headers = {
     'user-hash': 'e58243c5-d5fe-45d2-8ef6-531f84a98879',
 }
 
-# Параметры для запроса к API веб-сайта lalafo.kg, указывая категорию и необходимые расширения
-params = {
-    'category_id': '2038',
-    'expand': 'url',
-}
 
-# Функция для получения данных о недвижимости с веб-сайта
-def get_data():
-    page = 1
+def get_total_pages(category_id):
+    params = {
+        'category_id': category_id,
+        'page': '1',
+        'expand': 'url',
+    }
+    response = requests.get('https://lalafo.kg/api/search/v3/feed/search', params=params, cookies=cookies,
+                            headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        total_items = data["_meta"]["pageCount"]
+        return total_items
+
+
+def get_data_for_category(category_id):
+    total_pages = get_total_pages(category_id)
     all_items = []
-
-    # Цикл для получения данных с 10 страниц (можно изменить значение в range для получения большего количества данных)
-    for i in range(10):
-        params['page'] = str(page)
+    count = 1
+    for page in range(1, total_pages + 1):
+        params = {
+            'category_id': category_id,
+            'page': str(page),
+            'expand': 'url',
+        }
         response = requests.get('https://lalafo.kg/api/search/v3/feed/search', params=params, cookies=cookies,
                                 headers=headers)
-
-        # Проверка статус кода ответа на запрос
-        if response.status_code != 200:
-            print(f"Ошибка запроса. Статус код: {response.status_code}")
-            break
-
-        data = response.json()
-
-        # Проверка наличия поля 'items' в JSON-ответе и добавление элементов текущей страницы в общий список
-        if 'items' in data and data['items']:
+        if response.status_code == 200:
+            data = response.json()
             all_items.extend(data['items'])
+            print(count, total_pages)
+            count += 1
         else:
-            # Если следующей страницы нет, завершаем выполнение цикла
-            break
-
-        # Проверка наличия следующей страницы
-        if '_links' in data and 'next' in data['_links']:
-            page += 1
-        else:
-            # Если следующей страницы нет, завершаем выполнение цикла
-            break
+            print(f"Ошибка запроса на странице {page} для категории {category_id}. Статус код: {response.status_code}")
 
     return all_items
 
-# Получение всех элементов данных о недвижимости
-all_data = get_data()
+list_category = ['2038', '2046', '2031', '2055']
+all_data = []
+
+for category in list_category:
+    data = get_data_for_category(category)
+    all_data.extend(data)
 
 # Сохранение всех данных в JSON-файле
 with open('lalafo_data.json', 'w', encoding='UTF-8') as file:

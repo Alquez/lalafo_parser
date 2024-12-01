@@ -2,7 +2,7 @@ import json
 import requests
 import csv
 from bs4 import BeautifulSoup
-
+import os
 """
 Этот скрипт на Python собирает данные о недвижимости с веб-сайта "lalafo.kg". 
 Он читает информацию из JSON-файла, отправляет запросы к веб-сайту для получения дополнительных данных, 
@@ -56,11 +56,30 @@ params = {
     'expand': 'url',
     'page': '1',
 }
+csv_filename = 'Недвижимость.csv'
+
+fields = ["Название", "Город", "Телефон", "Тип продажи", "Ссылка", "Район", "Площадь участка (соток):", "Площадь (м2):", "Количество комнат:", "Цена в долларе", "Цена в сомах"]
+
+# Проверяем, существует ли файл. Если нет, создаем файл с заголовками
+if not os.path.exists(csv_filename):
+    with open(csv_filename, 'w', encoding='UTF-8', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fields)
+        writer.writeheader()
+def write_to_csv(row):
+    with open(csv_filename, 'a', encoding='UTF-8', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=row.keys())
+        writer.writerow(row)
+
 
 # Открываем JSON-файл с данными для чтения
 with open('lalafo_data_no_duplicates.json', 'r', encoding='UTF-8') as file:
     data_list = json.load(file)
-
+    try:
+        with open(csv_filename, 'x', encoding='UTF-8', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=data_list[0].keys())
+            writer.writeheader()
+    except FileExistsError:
+        pass
     # Создаем пустой список для хранения отобранных данных
     selected_fields_list = []
 
@@ -77,6 +96,7 @@ with open('lalafo_data_no_duplicates.json', 'r', encoding='UTF-8') as file:
                 "Телефон": item.get("mobile"),
                 "Тип продажи": item.get("ad_label"),
                 "Ссылка": f'https://lalafo.kg{item.get("url")}',
+                "Район": None,
             }
 
             # Отправляем GET-запрос для получения дополнительных данных из веб-страницы
@@ -113,10 +133,11 @@ with open('lalafo_data_no_duplicates.json', 'r', encoding='UTF-8') as file:
             for param in item.get("params", []):
                 if param.get("name") == "Район":
                     selected_fields["Район"] = param.get("value")
-                    break
 
             # Добавляем отобранные данные в список
             selected_fields_list.append(selected_fields)
+
+            write_to_csv(selected_fields)
 
             # Выводим информацию о количестве обработанных элементов
             print(f"Обработано {count} из {len(data_list)}")
@@ -127,19 +148,3 @@ with open('lalafo_data_no_duplicates.json', 'r', encoding='UTF-8') as file:
         except Exception as e:
             print(f"Элемент не найден в данном блоке. Пропускаем... https://lalafo.kg{item.get('url')}")
             continue
-
-# Создаем CSV-файл и записываем в него отобранные данные
-csv_filename = 'Недвижимость.csv'
-with open(csv_filename, 'w', encoding='UTF-8', newline='') as csvfile:
-    fieldnames = selected_fields_list[0].keys()
-    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-    # Записываем заголовки столбцов в CSV-файл
-    writer.writeheader()
-
-    # Записываем данные в CSV-файл
-    for row in selected_fields_list:
-        writer.writerow(row)
-
-# Выводим сообщение об успешном сохранении данных
-print(f"Данные успешно сохранены в {csv_filename}.")
