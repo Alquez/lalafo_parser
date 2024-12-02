@@ -65,6 +65,7 @@ if not os.path.exists(csv_filename):
     with open(csv_filename, 'w', encoding='UTF-8', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fields)
         writer.writeheader()
+
 def write_to_csv(row):
     with open(csv_filename, 'a', encoding='UTF-8', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=row.keys())
@@ -106,16 +107,16 @@ with open('lalafo_data_no_duplicates.json', 'r', encoding='UTF-8') as file:
 
             # Извлекаем информацию о площади участка, площади и количестве комнат из HTML-страницы
             # (если соответствующие данные присутствуют)
-            area = data_soup.find('p', class_='Paragraph secondary', string='Площадь участка (соток):')
+            area = data_soup.find('p', class_='LFParagraph size-14', string='Площадь участка (соток):')
             area_text = area.find_next('p').text.strip() if area else ""
             selected_fields["Площадь участка (соток):"] = area_text
 
-            area2 = data_soup.find('p', class_='Paragraph secondary', string='Площадь (м2):')
+            area2 = data_soup.find('p', class_='LFParagraph size-14', string='Площадь (м2):')
             area2_text = area2.find_next('p').text.strip() if area2 else ""
             selected_fields["Площадь (м2):"] = area2_text
 
-            rooms = data_soup.find('p', class_='Paragraph secondary', string='Количество комнат:')
-            rooms_text = rooms.find_next('a').text.strip() if rooms else "no data"
+            rooms = data_soup.find('p', class_='LFParagraph size-14', string='Количество комнат:')
+            rooms_text = rooms.find_next('a').text.strip() if rooms else ""
             selected_fields["Количество комнат:"] = rooms_text
 
             # Определяем цену в сомах и долларах в зависимости от валюты
